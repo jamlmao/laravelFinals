@@ -108,14 +108,14 @@ class CarController extends Controller
     
         $car->update($attrs);
     
-        return response([
+        return response([ 
             'message' => 'Car updated successfully',
             'car' => $car
         ], 200);
     }
     
 
-    
+
     public function deleteCar($id)
     {
         $car = Car::find($id);
