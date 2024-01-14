@@ -25,49 +25,86 @@ class CarController extends Controller
 
 
 
-    public function store(Request $request)
+     public function store(Request $request)
     {
         $request->validate([
             'desc' => 'required',
             'name' => 'required',
             'brand' => 'required',
             'price' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|string', 
         ]);
-    
-        $car = new Car([
-            'brand' => $request->get('brand'),
-            'desc' => $request->get('desc'),
-            'name' => $request->get('name'),
-            'brand' => $request->get('brand'),
-            'price' => $request->get('price'),
-        ]);
-    
-        if ($request->hasFile('image')) {
-            $imageName = time().'.'.$request->image->extension();  
-            $request->image->storeAs('public/images', $imageName);
-            $car->image = asset('storage/images/'.$imageName);
+
+        $imageName = time().'.png';  
+
+      
+        $decodedImage = base64_decode($request->image, true);
+
+        if ($decodedImage === false) {
+            return response([
+                'message' => 'Invalid base64 image'
+            ], 400);
         }
-    
-        $car->save();
-    
-        return response()->json(['message' => 'Car created successfully', 'car' => $car]);
+
+        $isSaved = \Storage::disk('public')->put('images/'.$imageName, $decodedImage);
+
+        if (!$isSaved) {
+            return response([
+                'message' => 'Failed to save image'
+            ], 500);
+        }
+
+        $car = Car::create([
+            'desc' => $request->desc,
+            'name' => $request->name,
+            'brand' => $request->brand,
+            'price' => $request->price,
+            'image' => asset('storage/images/'.$imageName),
+        ]);
+
+        return response([
+            'message' => 'Car created successfully',
+            'car' => $car
+        ], 200);
     }
 
-    public function update(Request $request, $id)
+
+
+     public function update(Request $request, $id)
     {
         $car = Car::find($id);
-
+    
         $attrs = $request->validate([
-            'brand' => 'required|string',
-            'name' => 'required|string',
+            'brand' => 'sometimes|string',
+            'name' => 'sometimes|string',
             'desc' => 'sometimes|string',
-            'price'=> 'sometimes|string',
+            'price'=> 'sometimes|numeric',
+            'image' => 'sometimes|string', 
         ]);
     
-        $attrs = array_filter($attrs, function ($value) {
-            return !is_null($value);
-        });
+        if ($request->get('image')) {
+            $imageName = time().'.png';  
+    
+            
+            $decodedImage = base64_decode($request->get('image'), true);
+    
+            if ($decodedImage === false) {
+                return response([
+                    'message' => 'Invalid base64 image'
+                ], 400);
+            }
+    
+            
+            $isSaved = \Storage::disk('public')->put('images/'.$imageName, $decodedImage);
+    
+            if (!$isSaved) {
+                return response([
+                    'message' => 'Failed to save image'
+                ], 500);
+            }
+    
+            $attrs['image'] = asset('storage/images/'.$imageName);
+        }
     
         $car->update($attrs);
     
@@ -76,6 +113,8 @@ class CarController extends Controller
             'car' => $car
         ], 200);
     }
+    
+
     
     public function deleteCar($id)
     {
