@@ -36,7 +36,7 @@ Route::group(['middleware'=> ['auth:sanctum']],function(){
    Route::post('/rent', [RentedCarsController::class, 'store']);
    Route::put('user/rented-cars/return', [RentedCarsController::class, 'returnCar']);
    Route::get('/users/{userId}/rent', [UserController::class, 'userRentedCars']);
-   
+   //
    
    
 });
