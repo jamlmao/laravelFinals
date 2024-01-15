@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->foreignId('car_id')->constrained()->restrictOnDelete();
             $table->string('status');
+            $table->date('pickup_date')->nullable();
             $table->timestamps();
         });
   }

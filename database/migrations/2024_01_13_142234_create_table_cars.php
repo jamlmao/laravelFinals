@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('brand');
             $table->decimal('price', 8, 2);
             $table->string('image')->nullable();
+            $table->string('status');
             $table->timestamps();
             $table->softDeletes();
            

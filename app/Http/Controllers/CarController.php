@@ -36,7 +36,7 @@ class CarController extends Controller
         ]);
 
         $imageName = time().'.png';  
-
+        
       
         $decodedImage = base64_decode($request->image, true);
 
@@ -60,6 +60,7 @@ class CarController extends Controller
             'brand' => $request->brand,
             'price' => $request->price,
             'image' => asset('storage/images/'.$imageName),
+            'status' => 'available' 
         ]);
 
         return response([
@@ -143,6 +144,5 @@ class CarController extends Controller
     }
     
 
-
-
+        
 }

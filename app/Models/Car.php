@@ -15,6 +15,7 @@ class Car extends Model
         'brand',
         'price',
         'image',
+        'status'
     ];
     protected $dates = ['deleted_at'];
 }
