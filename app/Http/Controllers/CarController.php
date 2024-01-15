@@ -11,7 +11,7 @@ class CarController extends Controller
     public function index()
     {
         return response([
-            'cars' => Car::select('id', 'name', 'desc','price','image','brand')->get()
+            'cars' => Car::select('id', 'name', 'desc','price','image','brand','status')->get()
         ], 200);
     }
 

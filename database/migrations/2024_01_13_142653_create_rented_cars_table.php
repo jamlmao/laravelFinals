@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('car_id')->constrained()->restrictOnDelete();
             $table->string('status');
             $table->date('pickup_date')->nullable();
+            $table->decimal('amount', 8, 2)->nullable();
+            $table->string('payment_status')->default('unpaid');
             $table->timestamps();
         });
   }

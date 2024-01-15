@@ -12,6 +12,7 @@ use App\Http\Resources\CarResource;
 
 class RentedCarsController extends Controller
 {
+    //get all rented cars
     public function index(){
         $rentedCars = RentedCar::with(['user', 'car'])->get();
 
@@ -22,6 +23,7 @@ class RentedCarsController extends Controller
         return view('rented_cars.index', compact('rentedCars'));
     }
 
+    //reserveCar
         public function reserveCar(Request $request)
         {
             $request->validate([
@@ -56,7 +58,7 @@ class RentedCarsController extends Controller
 
        
 
-
+        //userRentedCars
         public function userRentedCars($userId)
             {
                 $rentedCars = RentedCar::with(['car' => function ($query) {
@@ -82,7 +84,7 @@ class RentedCarsController extends Controller
             }
     
 
-
+            //returnCar
 
             public function returnCar(Request $request)
             {
@@ -112,14 +114,15 @@ class RentedCarsController extends Controller
                     'rentedCar' => $rentedCar
                 ], 200);
             }
-                    
 
-            public function pickupCar(Request $request)
+                //pickupCar
+          public function pickupCar(Request $request) 
         {
             $request->validate([
                 'user_id' => 'required',
                 'car_id' => 'required',
-                'pickup_date' => 'required|date'
+                'pickup_date' => 'required|date',
+                'amount' => 'required|numeric'
             ]);
 
             $rentedCar = RentedCar::where('user_id', $request->user_id)
@@ -137,11 +140,18 @@ class RentedCarsController extends Controller
                 return response()->json(['message' => 'Car is not reserved'], 400);
             }
 
+            
+            if ($request->amount != $car->price) {
+                return response()->json(['message' => 'The amount paid does not match the price of the car'], 400);
+            }
+
             $car->status = 'rented';
             $car->save();
 
             $rentedCar->status = 'rented';
+            $rentedCar->payment_status = 'paid';
             $rentedCar->pickup_date = $request->pickup_date;
+            $rentedCar->amount = $request->amount;
             $rentedCar->save();
 
             return response()->json([
@@ -149,7 +159,6 @@ class RentedCarsController extends Controller
                 'Rent' => $rentedCar
             ], 200);
         }
-
             
   
 
