@@ -23,7 +23,7 @@ class CarController extends Controller
         ],200);
     }
 
-    
+
 
      public function store(Request $request)
     {
@@ -60,7 +60,8 @@ class CarController extends Controller
             'brand' => $request->brand,
             'price' => $request->price,
             'image' => asset('storage/images/'.$imageName),
-            'status' => 'available' 
+            'status' => 'available' ,
+            'pickup_count' => 0
         ]);
 
         return response([
@@ -143,6 +144,13 @@ class CarController extends Controller
         return response()->json(['message' => 'Car restored successfully']);
     }
     
-
+    public function availableCars()
+        {
+            return response([
+                'cars' => Car::select('id', 'name', 'desc','price','image','brand','status')
+                             ->where('status', 'available')
+                             ->get()
+            ], 200);
+        }
         
 }

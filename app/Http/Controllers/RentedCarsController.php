@@ -116,51 +116,53 @@ class RentedCarsController extends Controller
             }
 
                 //pickupCar
-          public function pickupCar(Request $request) 
-        {
-            $request->validate([
-                'user_id' => 'required',
-                'car_id' => 'required',
-                'pickup_date' => 'required|date',
-                'amount' => 'required|numeric'
-            ]);
-
-            $rentedCar = RentedCar::where('user_id', $request->user_id)
-                                ->where('car_id', $request->car_id)
-                                ->where('status', 'reserved')
-                                ->first();
-
-            if (!$rentedCar) {
-                return response()->json(['message' => 'No reserved car found for this user'], 404);
-            }
-
-            $car = Car::find($rentedCar->car_id);
-
-            if ($car->status != 'reserved') {
-                return response()->json(['message' => 'Car is not reserved'], 400);
-            }
-
-            
-            if ($request->amount != $car->price) {
-                return response()->json(['message' => 'The amount paid does not match the price of the car'], 400);
-            }
-
-            $car->status = 'rented';
-            $car->save();
-
-            $rentedCar->status = 'rented';
-            $rentedCar->payment_status = 'paid';
-            $rentedCar->pickup_date = $request->pickup_date;
-            $rentedCar->amount = $request->amount;
-            $rentedCar->save();
-
-            return response()->json([
-                'message' => 'Car picked up successfully.',
-                'Rent' => $rentedCar
-            ], 200);
-        }
-            
-  
+                public function pickupCar(Request $request) 
+                {
+                    $request->validate([
+                        'user_id' => 'required',
+                        'car_id' => 'required',
+                        'pickup_date' => 'required|date',
+                        'amount' => 'required|numeric',
+                        'days' => 'required|integer|min:1'
+                    ]);
+                
+                    $rentedCar = RentedCar::where('user_id', $request->user_id)
+                                        ->where('car_id', $request->car_id)
+                                        ->where('status', 'reserved')
+                                        ->first();
+                
+                    if (!$rentedCar) {
+                        return response()->json(['message' => 'No reserved car found for this user'], 404);
+                    }
+                
+                    $car = Car::find($rentedCar->car_id);
+                
+                    if ($car->status != 'reserved') {
+                        return response()->json(['message' => 'Car is not reserved'], 400);
+                    }
+                
+                    $totalPrice = $car->price * $request->days; // Calculate the total price
+                
+                    if ($request->amount != $totalPrice) {
+                        return response()->json(['message' => 'The amount paid does not match the total price of the car rental'], 400);
+                    }
+                
+                    $car->status = 'rented';
+                    $car->pickup_counter += 1; // Increment the pickup count
+                    $car->save();
+                
+                    $rentedCar->status = 'rented';
+                    $rentedCar->payment_status = 'paid';
+                    $rentedCar->pickup_date = $request->pickup_date;
+                    $rentedCar->amount = $request->amount;
+                    $rentedCar->days = $request->days; // Save the number of days
+                    $rentedCar->save();
+                
+                    return response()->json([
+                        'message' => 'Car picked up successfully.',
+                        'Rent' => $rentedCar
+                    ], 200);
+                }
 
 }
 

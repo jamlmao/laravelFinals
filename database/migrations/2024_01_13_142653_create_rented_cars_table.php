@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('pickup_date')->nullable();
             $table->decimal('amount', 8, 2)->nullable();
             $table->string('payment_status')->default('unpaid');
+            $table->integer('days')->nullable();
             $table->timestamps();
         });
   }

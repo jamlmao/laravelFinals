@@ -62,4 +62,17 @@ class AuthController extends Controller {
             'token' => auth()->user()->createToken('secret')->plainTextToken
         ], 200);
     }
+
+
+
+
+    public function logout(Request $request)
+        {
+            $request->user()->token()->revoke();
+
+            return response()->json([
+                'message' => 'Successfully logged out'
+            ]);
+        }
+
 }
