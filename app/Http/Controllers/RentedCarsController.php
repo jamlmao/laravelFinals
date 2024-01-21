@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\CarsCollection;
 use App\Models\RentedCar;
@@ -24,38 +25,35 @@ class RentedCarsController extends Controller
     }
 
     //reserveCar
-        public function reserveCar(Request $request)
-        {
-            $request->validate([
-                'user_id' => 'required',
-                'car_id' => 'required'
-            ]);
-        
-            $car = Car::find($request->car_id);
-        
-            if (!$car) {
-                return response()->json(['message' => 'Car not found'], 404);
-            }
-        
-            if ($car->status != 'available') {
-                return response()->json(['message' => 'Car is not available for reservation'], 400);
-            }
-        
-            $car->status = 'reserved'; 
-            $car->save();
-        
-            $rentedCar = RentedCar::create([
-                'user_id' => $request->user_id,
-                'car_id' => $request->car_id,
-                'status' => 'reserved'  
-            ]);
-        
-            return response()->json([
-                'message' => 'Car reserved successfully.',
-                'rentedCar' => $rentedCar
-            ], 200);
+    public function reserveCar($carId)
+    {
+        $userId = Auth::id();
+    
+        $car = Car::find($carId);
+    
+        if (!$car) {
+            return response()->json(['message' => 'Car not found'], 404);
         }
-
+    
+        if ($car->status != 'available') {
+            return response()->json(['message' => 'Car is not available for reservation'], 400);
+        }
+    
+        $car->status = 'reserved'; 
+        $car->save();
+    
+        $rentedCar = RentedCar::create([
+            'user_id' => $userId,
+            'car_id' => $carId,
+            'status' => 'reserved'  
+        ]);
+    
+        return response()->json([
+            'message' => 'Car reserved successfully.',
+            'rentedCar' => $rentedCar
+        ], 200);
+    }
+    
        
 
         //userRentedCars
@@ -65,6 +63,7 @@ class RentedCarsController extends Controller
                     $query->withTrashed();
                 }])
                 ->where('user_id', $userId)
+                ->where('status', 'reserved') 
                 ->get();
 
                 $rentedCars = $rentedCars->map(function ($rentedCar) {
@@ -89,11 +88,11 @@ class RentedCarsController extends Controller
             public function returnCar(Request $request)
             {
                 $request->validate([
-                    'user_id' => 'required',
+                   
                     'car_id' => 'required'
                 ]);
-            
-                $rentedCar = RentedCar::where('user_id', $request->user_id)
+                $userId = auth()->id();
+                $rentedCar = RentedCar::where('user_id', $userId)
                                       ->where('car_id', $request->car_id)
                                       ->where('status', 'rented')
                                       ->first();
@@ -119,14 +118,13 @@ class RentedCarsController extends Controller
                 public function pickupCar(Request $request) 
                 {
                     $request->validate([
-                        'user_id' => 'required',
                         'car_id' => 'required',
                         'pickup_date' => 'required|date',
                         'amount' => 'required|numeric',
                         'days' => 'required|integer|min:1'
                     ]);
-                
-                    $rentedCar = RentedCar::where('user_id', $request->user_id)
+                    $userId = auth()->id();
+                    $rentedCar = RentedCar::where('user_id', $userId)
                                         ->where('car_id', $request->car_id)
                                         ->where('status', 'reserved')
                                         ->first();
@@ -153,17 +151,48 @@ class RentedCarsController extends Controller
                 
                     $rentedCar->status = 'rented';
                     $rentedCar->payment_status = 'paid';
-                    $rentedCar->pickup_date = $request->pickup_date;
+                    $pickupDateTime = Carbon::parse($request->pickup_date)->startOfDay();
+                    $rentedCar->pickup_date = $pickupDateTime;
+                    $rentedCar->save();
                     $rentedCar->amount = $request->amount;
                     $rentedCar->days = $request->days; // Save the number of days
                     $rentedCar->save();
                 
-                    return response()->json([
+                    return response()->json([   
                         'message' => 'Car picked up successfully.',
                         'Rent' => $rentedCar
                     ], 200);
                 }
 
+
+
+                public function userReservedCars($userId) // pakita sa  view cars to makikita yugn naka reserved nasasakayan
+            {
+
+                $rentedCar = RentedCar::with('car')->find($rentId);
+
+
+                    return response()->json([
+                        'pickup_date' => $rentedCar->pickup_date,
+                        'car' => $rentedCar->car,
+                        'details' => $rentedCar
+                    ]);
+            }
+            
+
+            public function getUserHistory($userId)
+            {   
+                $userId = auth()->id();
+               
+                $rentedCars = RentedCars::where('user_id', $userId)->get();
+                $reservedCars = ReservedCars::where('user_id', $userId)->get();
+    
+                
+                return response()->json([
+                    'rentedCars' => $rentedCars,
+                    'reservedCars' => $reservedCars
+                ]);
+            }
 }
 
 

@@ -22,21 +22,25 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::group(['middleware'=> ['auth:sanctum']],function(){
 
+   Route::get('/user', [AuthController::class, 'getUser']);
    Route::post('/logout',[AuthController::class,'logout']);
       //cars
-   Route::get('/cars', [CarController::class, 'index']);
-   Route::post('/cars', [CarController::class, 'store']);
+   Route::get('user/{id}/history', [CarController::class, 'getUserHistory']);
+   Route::get('cars/mostrented', [CarController::class, 'mostRentedCars']); //Check
+   Route::get('/cars', [CarController::class, 'index']);//C
+   Route::post('/cars', [CarController::class, 'store']); 
    Route::get('/cars/{id}', [CarController::class, 'show']);
    Route::put('/cars/{id}', [CarController::class, 'update']);
    Route::delete('/cars/{id}', [CarController::class, 'deleteCar']);
    Route::post('/cars/restore/{id}', [CarController::class, 'restoreCar']);
-   Route::get('/available', [CarController::class, 'availableCars']);  
+   Route::get('/available', [CarController::class, 'availableCars']);   //Check
    //rented
-   Route::get('/rent', [RentedCarsController::class, 'index']);
-   Route::put('user/{id}/rent/return', [RentedCarsController::class,'returnCar']);
-   Route::post('rent/pickup', [RentedCarsController::class, 'pickupCar']);
-   Route::post('rent/reserve', [RentedCarsController::class, 'reserveCar']);
-   Route::get('/users/{userId}/rent', [UserController::class, 'userRentedCars']);
+   Route::get('/rent', [RentedCarsController::class, 'index']);  
+   Route::put('user/{id}/rent/return', [RentedCarsController::class,'returnCar']);// new shit
+   Route::post('rent/pickup', [RentedCarsController::class, 'pickupCar']); // new shit
+   Route::post('rent/{id}/reserve', [RentedCarsController::class, 'reserveCar']); //Check 
+ 
+    
   
    
    

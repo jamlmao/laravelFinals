@@ -11,7 +11,7 @@ class CarController extends Controller
     public function index()
     {
         return response([
-            'cars' => Car::select('id', 'name', 'desc','price','image','brand','status')->get()
+            'cars' => Car::select('id', 'name', 'desc','price','image','brand','status','pickup_counter')->get()
         ], 200);
     }
 
@@ -70,7 +70,12 @@ class CarController extends Controller
         ], 200);
     }
 
-
+        public function mostRentedCars() 
+        {
+            $cars = Car::orderBy('pickup_counter', 'desc')->take(3)->get();
+        
+            return response()->json(['cars' => $cars], 200);
+        }
 
      public function update(Request $request, $id)
     {
@@ -147,10 +152,11 @@ class CarController extends Controller
     public function availableCars()
         {
             return response([
-                'cars' => Car::select('id', 'name', 'desc','price','image','brand','status')
+                'cars' => Car::select('id', 'name', 'desc','price','image','brand','status','pickup_counter')
                              ->where('status', 'available')
                              ->get()
             ], 200);
         }
-        
+
+       
 }

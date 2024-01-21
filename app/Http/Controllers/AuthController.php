@@ -75,4 +75,15 @@ class AuthController extends Controller {
             ]);
         }
 
+       public function getUser() 
+        {
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json(['message' => 'Not logged in'], 401);
+            }
+
+            return response()->json(['user' => $user], 200);
+        }
+
 }
