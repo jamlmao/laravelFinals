@@ -39,7 +39,7 @@ Route::group(['middleware'=> ['auth:sanctum']],function(){
    Route::get('/rent', [RentedCarsController::class, 'index']);  
    Route::put('user/{id}/rent/return', [RentedCarsController::class,'returnCar']); // new shit
    Route::post('rent/pickup', [RentedCarsController::class, 'pickupCar']); // new shit
-   Route::post('rent/{id}/reserve', [RentedCarsController::class, 'reserveCar']); //Check 
+   Route::post('rent/reserve', [RentedCarsController::class, 'reserveCar']); //Check 
    Route::post('/user/reserveCars', [RentedCarsController::class, 'userReservedCars']); //Check 
    
     
