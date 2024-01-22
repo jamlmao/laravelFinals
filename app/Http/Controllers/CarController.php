@@ -157,6 +157,6 @@ class CarController extends Controller
                              ->get()
             ], 200);
         }
-
+        
        
 }
