@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class RentedCarsController extends Controller
         $rentedCar = RentedCar::create([
             'user_id' => $userId,
             'car_id' => $carId,
-            'status' => 'reserved'  
+            'status' => 'topickup'  
         ]);
     
         return response()->json([
@@ -56,80 +57,91 @@ class RentedCarsController extends Controller
     
        
 
-        //userRentedCars
-        public function userRentedCars($userId)
-            {
-                $rentedCars = RentedCar::with(['car' => function ($query) {
-                    $query->withTrashed();
-                }])
-                ->where('user_id', $userId)
-                ->where('status', 'reserved') 
-                ->get();
-
-                $rentedCars = $rentedCars->map(function ($rentedCar) {
-                    if ($rentedCar->car) {
-                        if ($rentedCar->car->trashed()) {
-                            $rentedCar->car_status = 'This car has been deleted';
-                        } else {
-                            $rentedCar->car_status = 'This car is available';
-                        }
-                    } else {
-                        $rentedCar->car_status = 'Car not found';
-                    }
-                    return $rentedCar;
-                });
-
-                return response()->json(['rentedCars' => $rentedCars]);
-            }
     
 
             //returnCar
-
-            public function returnCar(Request $request, $id)
+            public function returnCar($car_id)
             {
-                $rentedCar = RentedCar::find($id);
+                $userId = auth()->id();
             
-                // Check if the rented car exists
-                if (!$rentedCar) {
+                DB::beginTransaction();
+            
+                try {
+                    $rentedCar = RentedCar::where('user_id', $userId)
+                        ->where('car_id', $car_id)
+                        ->whereNull('return_date')
+                        ->first();
+            
+                    if (!$rentedCar) {
+                        return response()->json([
+                            'message' => 'No rented car found with the given ID for the logged in user.'
+                        ], 404);
+                    }
+            
+                    // Check if the car is already returned
+                    if ($rentedCar->return_date) {
+                        return response()->json([
+                            'message' => 'The car has already been returned.'
+                        ], 400);
+                    }
+            
+                    // Check if the car has been picked up
+                    $pickupDate = \Carbon\Carbon::parse($rentedCar->pickup_date);
+                    if (!$pickupDate || $pickupDate->isFuture()) {
+                        return response()->json([
+                            'message' => 'The car has not been picked up yet.'
+                        ], 400);
+                    }
+            
+                    $car = Car::find($rentedCar->car_id);
+                    if (!$car) {
+                        return response()->json([
+                            'message' => 'No car found with the given ID.'
+                        ], 404);
+                    }
+            
+                    $returnDate = now();
+                    $rentedDays = $pickupDate->diffInDays($returnDate);
+                    $dueDays = max($rentedDays - $rentedCar->rented_days, 0);
+                    $dueFee = $dueDays * $car->price;
+            
+                    $rentedCar->return_date = $returnDate;
+                    $rentedCar->status = "returned";
+                    $rentedCar->due_fee = $dueFee;
+                    $rentedCar->save();
+            
+                    $car->status = 'available';
+                    $car->save();
+            
+                    DB::commit();
+            
                     return response()->json([
-                        'message' => 'No recent rent found.',
-                    ], 404);
-                }
+                        'message' => 'Car returned successfully.',
+                        'due_fee' => $dueFee
+                    ]);
+                } catch (\Exception $e) {
+                    DB::rollback();
             
-                // Assuming that a RentedCar has a relationship with a Car
-                $car = $rentedCar->car;
-            
-                // Check if the car exists and is available
-                if (!$car || $car->status != 'available') {
                     return response()->json([
-                        'message' => 'Car is not available for rent.',
-                    ], 404);
+                        'message' => 'Failed to return car: ' . $e->getMessage()
+                    ], 500);
                 }
-            
-                // Update the status in the cars table
-                $car->status = 'rented';
-                $car->save();
-            
-                return response()->json([
-                    'message' => 'Car rented successfully.',
-                    'Rent' => $rentedCar
-                ], 200);
             }
             
 
                 //pickupCar
-                public function pickupCar(Request $request) 
+                public function pickupCar(Request $request, $car_id) 
                 {
                     $request->validate([
-                        'car_id' => 'required',
                         'pickup_date' => 'required|date',
                         'amount' => 'required|numeric',
                         'days' => 'required|integer|min:1'
                     ]);
                     $userId = auth()->id();
+
                     $rentedCar = RentedCar::where('user_id', $userId)
-                                        ->where('car_id', $request->car_id)
-                                        ->where('status', 'reserved')
+                                        ->where('car_id', $car_id)
+                                        ->where('status', 'topickup')
                                         ->first();
                 
                     if (!$rentedCar) {

@@ -24,23 +24,28 @@ Route::group(['middleware'=> ['auth:sanctum']],function(){
 
    Route::get('/user', [AuthController::class, 'getUser']);
    Route::post('/logout',[AuthController::class,'logout']);
+
+   
       //cars
-   Route::get('cars/mostrented', [CarController::class, 'mostRentedCars']); //Check
-   Route::get('/cars', [CarController::class, 'index']);//C
+
+   Route::get('cars/mostrented', [CarController::class, 'mostRentedCars']); //added to flutter DONEE
+   Route::get('/cars', [CarController::class, 'index']);//added to flutter DONEE
    Route::post('/cars', [CarController::class, 'store']); 
    Route::get('/cars/{id}', [CarController::class, 'show']);
    Route::put('/cars/{id}', [CarController::class, 'update']);
    Route::delete('/cars/{id}', [CarController::class, 'deleteCar']);
    Route::post('/cars/restore/{id}', [CarController::class, 'restoreCar']);
-   Route::get('/available', [CarController::class, 'availableCars']);   //Check
+   Route::get('/available', [CarController::class, 'availableCars']);   //added to flutter DONEE
+
+
    //rented
 
-   Route::get('user/{id}/rent/history', [RentedCarsController::class, 'getUserHistory']);
+   Route::get('user/{id}/rent/history', [RentedCarsController::class, 'userRentalHistory']); //add to flutter  NAKAREADY NA PAGE NETO SAME DESIGN NALANG DIN SA VIEW CARS
    Route::get('/rent', [RentedCarsController::class, 'index']);  
-   Route::put('user/{id}/rent/return', [RentedCarsController::class,'returnCar']); // new shit
-   Route::post('rent/pickup', [RentedCarsController::class, 'pickupCar']); // new shit
-   Route::post('rent/reserve', [RentedCarsController::class, 'reserveCar']); //Check 
-   Route::post('/user/reserveCars', [RentedCarsController::class, 'userReservedCars']); //Check 
+   Route::put('rent/{id}/return', [RentedCarsController::class,'returnCar']); // add to flutter CARDETAILS LOOK A LIKE WITH DUE FEE NA IRERENDER
+   Route::post('rent/{id}/pickup', [RentedCarsController::class, 'pickupCar']); // add to flutter ETO YUNG SA FORM
+   Route::post('rent/{id}/reserve', [RentedCarsController::class, 'reserveCar']); ///added to flutter DONEEEE
+   Route::post('/user/reserveCars', [RentedCarsController::class, 'userReservedCars']); //added to flutter DONEEEE
    
     
    

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('brand');
             $table->decimal('price', 8, 2);
-            $table->integer('pickup_counter', 8, 2) ->default(0) -> nullable();
+            $table->integer('pickup_counter') ->default(0) -> nullable();
             $table->string('image')->nullable();
             $table->string('status');
             $table->timestamps();
