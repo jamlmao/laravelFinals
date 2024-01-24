@@ -18,9 +18,20 @@ class CarController extends Controller
 
     public function show($id)
     {
-        return response([
-            'cars' => Car::where('id',$id)->get()
-        ],200);
+        $car = Car::where('id', $id)->first();
+
+        if ($car) {
+            return response([
+                'image' => $car->image,
+                'price' => $car->price,
+                'brand' => $car->brand,
+                'name' => $car->name,
+            ], 200);
+        } else {
+            return response([
+                'error' => 'Car not found',
+            ], 404);
+        }
     }
 
 
