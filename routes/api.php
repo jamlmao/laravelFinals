@@ -41,9 +41,11 @@ Route::group(['middleware'=> ['auth:sanctum']],function(){
    //rented
 
    Route::get('user/{id}/rent/history', [RentedCarsController::class, 'userRentalHistory']); //add to flutter  NAKAREADY NA PAGE NETO SAME DESIGN NALANG DIN SA VIEW CARS
+   Route::post('rent/{id}/cancel', [RentedCarsController::class, 'Cancelreserve']); 
+   Route::get('/rentcars', [RentedCarsController::class, 'getRentedCars']);  
    Route::get('/rent', [RentedCarsController::class, 'index']);  
    Route::put('rent/{id}/return', [RentedCarsController::class,'returnCar']); // add to flutter CARDETAILS LOOK A LIKE WITH DUE FEE NA IRERENDER
-   Route::post('rent/{id}/pickup', [RentedCarsController::class, 'pickupCar']); // add to flutter ETO YUNG SA FORM
+   Route::post('rent/{id}/pickup', [RentedCarsController::class, 'pickupCar']); // add to flutter done
    Route::post('rent/{id}/reserve', [RentedCarsController::class, 'reserveCar']); ///added to flutter DONEEEE
    Route::post('/user/reserveCars', [RentedCarsController::class, 'userReservedCars']); //added to flutter DONEEEE
    
