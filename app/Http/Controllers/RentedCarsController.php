@@ -111,6 +111,7 @@ class RentedCarsController extends Controller
                     $rentedCar->save();
             
                     $car->status = 'available';
+                    $car->pickup_counter += 1;
                     $car->save();
             
                     DB::commit();
@@ -129,6 +130,10 @@ class RentedCarsController extends Controller
             }
 
 
+                
+
+
+            //getRentedCars
 
             public function getRentedCars()
             {
@@ -151,6 +156,7 @@ class RentedCarsController extends Controller
                         'return_date' => $returnDate->toDateString(),
                         'days' => $rentedCar->days,
                         'car_brand' => $rentedCar->car->brand,
+                        'due_fee' => $rentedCar->due_fee,
                     ];
                 });
             
@@ -159,7 +165,7 @@ class RentedCarsController extends Controller
                     'rented_cars' => $rentedCars
                 ]);
             }
-            
+
 
                 //pickupCar
                 public function pickUpCar(Request $request, $car_id)
