@@ -130,7 +130,7 @@ class RentedCarsController extends Controller
             }
 
 
-                
+
 
 
             //getRentedCars
@@ -150,6 +150,7 @@ class RentedCarsController extends Controller
                     $returnDate = $pickupDate->copy()->addDays($rentedCar->days);
             
                     return [
+                        'car_id' => $rentedCar->car_id,
                         'car_image' => $rentedCar->car->image,
                         'car_name' => $rentedCar->car->name,
                         'pickup_date' => $pickupDate->toDateString(),
