@@ -255,19 +255,31 @@ class RentedCarsController extends Controller
                     }
                 }
 
-
-                  public function userRentalHistory($userId)
-                    {
-                        // Fetch all rented cars by the user
-                        $rentedCars = RentedCar::with('car')
-                            ->where('user_id', $userId)
-                            ->get();
-
-                        // Return the rented cars as a JSON response
-                        return response()->json([
-                            'rentedCars' => $rentedCars
-                        ]);
-                    }
+                public function userRentalHistory()
+                {
+                    // Fetch all rented cars by the user
+                    $userId = auth()->id();
+                    $rentedCars = RentedCar::with(['car' => function($query) {
+                        $query->select('id', 'image', 'name', 'brand');
+                    }])
+                    ->where('user_id', $userId)
+                    ->get(['car_id', 'return_date']);
+                
+                    // Format the data
+                    $rentedCars = $rentedCars->map(function($rentedCar) {   
+                        return [
+                            'car_image' => $rentedCar->car->image,
+                            'car_name' => $rentedCar->car->name,
+                            'car_brand' => $rentedCar->car->brand,
+                            'return_date' => $rentedCar->return_date,
+                        ];
+                    });
+                
+                    // Return the rented cars as a JSON response
+                    return response()->json([
+                        'rentedCars' => $rentedCars
+                    ]);
+                }
 
 
 

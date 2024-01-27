@@ -40,7 +40,7 @@ Route::group(['middleware'=> ['auth:sanctum']],function(){
 
    //rented
 
-   Route::get('user/{id}/rent/history', [RentedCarsController::class, 'userRentalHistory']); //add to flutter  NAKAREADY NA PAGE NETO SAME DESIGN NALANG DIN SA VIEW CARS
+   Route::get('/rent/history', [RentedCarsController::class, 'userRentalHistory']); //add to flutter  NAKAREADY NA PAGE NETO SAME DESIGN NALANG DIN SA VIEW CARS
    Route::post('rent/{id}/cancel', [RentedCarsController::class, 'Cancelreserve']); 
    Route::get('/rentcars', [RentedCarsController::class, 'getRentedCars']);  
    Route::get('/rent', [RentedCarsController::class, 'index']);  

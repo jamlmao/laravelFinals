@@ -37,49 +37,49 @@ class CarController extends Controller
 
 
      public function store(Request $request)
-    {
-        $request->validate([
-            'desc' => 'required',
-            'name' => 'required',
-            'brand' => 'required',
-            'price' => 'required',
-            'image' => 'required|string', 
-        ]);
+        {
+            $request->validate([
+                'desc' => 'required',
+                'name' => 'required',
+                'brand' => 'required',
+                'price' => 'required',
+                'image' => 'required|string', 
+            ]);
 
-        $imageName = time().'.png';  
+            $imageName = time().'.png';  
+            
         
-      
-        $decodedImage = base64_decode($request->image, true);
+            $decodedImage = base64_decode($request->image, true);
 
-        if ($decodedImage === false) {
+            if ($decodedImage === false) {
+                return response([
+                    'message' => 'Invalid base64 image'
+                ], 400);
+            }
+
+            $isSaved = \Storage::disk('public')->put('images/'.$imageName, $decodedImage);
+
+            if (!$isSaved) {
+                return response([
+                    'message' => 'Failed to save image'
+                ], 500);
+            }
+
+            $car = Car::create([
+                'desc' => $request->desc,
+                'name' => $request->name,
+                'brand' => $request->brand,
+                'price' => $request->price,
+                'image' => asset('public/storage/images/'.$imageName),
+                'status' => 'available' ,
+                'pickup_count' => 0
+            ]);
+
             return response([
-                'message' => 'Invalid base64 image'
-            ], 400);
+                'message' => 'Car created successfully',
+                'car' => $car
+            ], 200);
         }
-
-        $isSaved = \Storage::disk('public')->put('images/'.$imageName, $decodedImage);
-
-        if (!$isSaved) {
-            return response([
-                'message' => 'Failed to save image'
-            ], 500);
-        }
-
-        $car = Car::create([
-            'desc' => $request->desc,
-            'name' => $request->name,
-            'brand' => $request->brand,
-            'price' => $request->price,
-            'image' => asset('storage/images/'.$imageName),
-            'status' => 'available' ,
-            'pickup_count' => 0
-        ]);
-
-        return response([
-            'message' => 'Car created successfully',
-            'car' => $car
-        ], 200);
-    }
 
         public function mostRentedCars() 
         {
